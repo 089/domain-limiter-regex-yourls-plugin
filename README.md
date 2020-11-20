@@ -17,7 +17,7 @@ Define a list of allowed domains in the Admin Interface`.
 You might use [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) to define domain [patterns](https://www.php.net/manual/de/reference.pcre.pattern.syntax.php).
 
 You must also specify a list of usernames that are exempt from this restriction and are the only users allowed to edit the list of allowed domains in the Admin Interface.
-`domainlimit_exempt_users = array( 'bobadmin' );`
+`domainlimitregex_exempt_users = array( 'bobadmin' );`
 
 License
 -------

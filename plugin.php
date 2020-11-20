@@ -1,20 +1,20 @@
 <?php
 /*
-Plugin Name: Domain Limiter
-Plugin URI: https://bitbucket.org/quantumwebco/domain-limiter-yourls-plugin
-Description: Only allow URLs from admin-specified domains, with an admin panel. Based on the Domain Limiter plugin by nicwaller.
-Version: 1.1.0
-Author: quantumweb.co
-Author URI: http://quantumweb.co
+Plugin Name: Domain Limiter RegEx
+Plugin URI: https://github.com/089/domain-limiter-regex-yourls-plugin
+Description: Only allow URLs from admin-specified domains, with an admin panel. Based on the Domain Limiter plugin by nicwaller and quantumweb.co.
+Version: 1.2.0
+Author: github.com/089
+Author URI: https://github.com/089
 */
 
 // No direct call
 if( !defined( 'YOURLS_ABSPATH' ) ) die();
 
-yourls_add_filter( 'shunt_add_new_link', 'domainlimit_link_filter' );
+yourls_add_filter( 'shunt_add_new_link', 'domainlimitregex_link_filter' );
 
-function domainlimit_link_filter( $original_return, $url, $keyword = '', $title = '' ) {
-	if ( domainlimit_environment_check() != true ) {
+function domainlimitregex_link_filter( $original_return, $url, $keyword = '', $title = '' ) {
+	if ( domainlimitregex_environment_check() != true ) {
 		$err = array();
 		$err['status'] = 'fail';
 		$err['code'] = 'error:configuration';
@@ -24,15 +24,15 @@ function domainlimit_link_filter( $original_return, $url, $keyword = '', $title 
 	}
 
 	// If the user is exempt, don't even bother checking.
-	global $domainlimit_exempt_users;
-	if ( in_array( YOURLS_USER, $domainlimit_exempt_users ) ) {
+	global $domainlimitregex_exempt_users;
+	if ( in_array( YOURLS_USER, $domainlimitregex_exempt_users ) ) {
 		return $original_return;
 	}
 
-    $domainlimit_list = json_decode(yourls_get_option('domainlimit_list'), TRUE);
+    $domainlimitregex_list = json_decode(yourls_get_option('domainlimitregex_list'), TRUE);
 
-	// global $domainlimit_list;
-	$domain_whitelist = $domainlimit_list;
+	// global $domainlimitregex_list;
+	$domain_whitelist = $domainlimitregex_list;
 
 	// The plugin hook gives us the raw URL input by the user, but
 	// it needs some cleanup before it's suitable for parse_url().
@@ -49,11 +49,11 @@ function domainlimit_link_filter( $original_return, $url, $keyword = '', $title 
 	$allowed = false;
 	$requested_domain = parse_url($url, PHP_URL_HOST);
 	foreach ( $domain_whitelist as $domain_permitted ) {
-		if ( domainlimit_is_subdomain( $requested_domain, $domain_permitted ) ) {
+		if ( domainlimitregex_is_subdomain( $requested_domain, $domain_permitted ) ) {
 			$allowed = true;
 			break;
 		}
-		if ( domainlimit_matches_domain_pattern( $requested_domain, $domain_permitted ) ) {
+		if ( domainlimitregex_matches_domain_pattern( $requested_domain, $domain_permitted ) ) {
 			$allowed = true;
 			break;
 		}
@@ -74,7 +74,7 @@ function domainlimit_link_filter( $original_return, $url, $keyword = '', $title 
 /*
  * Determine whether test_domain is controlled by $parent_domain
  */
-function domainlimit_is_subdomain( $test_domain, $parent_domain ) {
+function domainlimitregex_is_subdomain( $test_domain, $parent_domain ) {
 	if ( $test_domain == $parent_domain ) {
 		return true;
 	}
@@ -93,7 +93,7 @@ function domainlimit_is_subdomain( $test_domain, $parent_domain ) {
 /*
  * Determine whether $test_domain matches given $domain_pattern
  */
-function domainlimit_matches_domain_pattern( $test_domain, $domain_pattern ) {
+function domainlimitregex_matches_domain_pattern( $test_domain, $domain_pattern ) {
 	if ( $test_domain == $parent_domain ) {
 		return true;
 	}
@@ -102,20 +102,20 @@ function domainlimit_matches_domain_pattern( $test_domain, $domain_pattern ) {
 }
 
 // returns true if everything is configured right
-function domainlimit_environment_check() {
-        if (yourls_get_option('domainlimit_list') !== false) {
-            $domainlimit_list = json_decode(yourls_get_option('domainlimit_list'), TRUE);
+function domainlimitregex_environment_check() {
+        if (yourls_get_option('domainlimitregex_list') !== false) {
+            $domainlimitregex_list = json_decode(yourls_get_option('domainlimitregex_list'), TRUE);
         } else {
-            yourls_add_option('domainlimit_list');
+            yourls_add_option('domainlimitregex_list');
         }
 
-	if ( !isset( $domainlimit_list ) ) {
-		error_log('Missing definition of $domainlimit_list in database');
+	if ( !isset( $domainlimitregex_list ) ) {
+		error_log('Missing definition of $domainlimitregex_list in database');
 		return false;
-	} else if ( isset( $domainlimit_list ) && !is_array( $domainlimit_list ) ) {
+	} else if ( isset( $domainlimitregex_list ) && !is_array( $domainlimitregex_list ) ) {
 		// be friendly and allow non-array definitions
-		$domain = $domainlimit_list;
-		$domainlimit_list = array( $domain );
+		$domain = $domainlimitregex_list;
+		$domainlimitregex_list = array( $domain );
 		return true;
 	}
 	return true;
@@ -123,27 +123,27 @@ function domainlimit_environment_check() {
 
 
 // Register your plugin admin page
-yourls_add_action( 'plugins_loaded', 'domainlimit_init' );
-function domainlimit_init() {
-    yourls_register_plugin_page( 'domainlimit', 'Domain Limiter Settings', 'domainlimit_display_page' );
+yourls_add_action( 'plugins_loaded', 'domainlimitregex_init' );
+function domainlimitregex_init() {
+    yourls_register_plugin_page( 'domainlimitregex', 'Domain Limiter RexEx Settings', 'domainlimitregex_display_page' );
 }
 
 // The function that will draw the admin page
-function domainlimit_display_page() {
+function domainlimitregex_display_page() {
     // Check if a form was submitted
-    if( isset( $_POST['domainlimit_list'] ) )
-            domainlimit_config_update_option();
+    if( isset( $_POST['domainlimitregex_list'] ) )
+            domainlimitregex_config_update_option();
 
-	global $domainlimit_exempt_users;
-    $domainlimit_list_option = yourls_get_option( 'domainlimit_list' );
-    foreach (json_decode($domainlimit_list_option) as $domain) {
-    	$domainlimit_list .= $domain.PHP_EOL;
+	global $domainlimitregex_exempt_users;
+    $domainlimitregex_list_option = yourls_get_option( 'domainlimitregex_list' );
+    foreach (json_decode($domainlimitregex_list_option) as $domain) {
+    	$domainlimitregex_list .= $domain.PHP_EOL;
     }
 	$disabled = false;
 
-	echo "<h3>Domain Limiter Settings</h3>";
+	echo "<h3>Domain Limiter RegEx Settings</h3>";
 
-	if ( !in_array( YOURLS_USER, $domainlimit_exempt_users ) ) {
+	if ( !in_array( YOURLS_USER, $domainlimitregex_exempt_users ) ) {
 		echo "<strong style='color:red;'>You are not authorized to edit this setting</strong>";
 		$disabled = " readonly";
 	}
@@ -151,14 +151,14 @@ function domainlimit_display_page() {
 	echo <<<HTML
 	    <form method="post">
 		<p>Please enter each URL on a new line</p>
-		<textarea name="domainlimit_list" style="width:100%;min-height:7em;"{$disabled}>{$domainlimit_list}</textarea>
+		<textarea name="domainlimitregex_list" style="width:100%;min-height:7em;"{$disabled}>{$domainlimitregex_list}</textarea>
 HTML;
-		if(in_array( YOURLS_USER, $domainlimit_exempt_users )) echo "<button type='submit'>Save</button>";
+		if(in_array( YOURLS_USER, $domainlimitregex_exempt_users )) echo "<button type='submit'>Save</button>";
 }
 
 // Update option in database
-function domainlimit_config_update_option() {
-    $list_array = explode(PHP_EOL, $_POST['domainlimit_list']);
+function domainlimitregex_config_update_option() {
+    $list_array = explode(PHP_EOL, $_POST['domainlimitregex_list']);
     foreach ($list_array as $domain) {
     	if(trim($domain)!="")
     	$list[] = filter_var(trim($domain), FILTER_SANITIZE_URL);
@@ -168,10 +168,10 @@ function domainlimit_config_update_option() {
 
         $jsonlist = json_encode( $list );
 
-        if (yourls_get_option('domainlimit_list') !== false) {
-            yourls_update_option('domainlimit_list', $jsonlist);
+        if (yourls_get_option('domainlimitregex_list') !== false) {
+            yourls_update_option('domainlimitregex_list', $jsonlist);
         } else {
-            yourls_add_option('domainlimit_list', $jsonlist);
+            yourls_add_option('domainlimitregex_list', $jsonlist);
         }
     }
 }
