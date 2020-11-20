@@ -53,6 +53,10 @@ function domainlimit_link_filter( $original_return, $url, $keyword = '', $title 
 			$allowed = true;
 			break;
 		}
+		if ( domainlimit_matches_domain_pattern( $requested_domain, $domain_permitted ) ) {
+			$allowed = true;
+			break;
+		}
 	}
 
 	if ( $allowed == true ) {
@@ -84,6 +88,17 @@ function domainlimit_is_subdomain( $test_domain, $parent_domain ) {
 
 	$chklen = strlen($parent_domain);
 	return ( $parent_domain == substr( $test_domain, 0-$chklen ) );
+}
+
+/*
+ * Determine whether $test_domain matches given $domain_pattern
+ */
+function domainlimit_matches_domain_pattern( $test_domain, $domain_pattern ) {
+	if ( $test_domain == $parent_domain ) {
+		return true;
+	}
+
+	return preg_match( $domain_pattern, $test_domain );
 }
 
 // returns true if everything is configured right
